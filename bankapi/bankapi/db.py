@@ -11,10 +11,6 @@ URI = f"mongodb+srv://{db_user}:{db_pwd}@bankdb.4homz0h.mongodb.net/?appName=ban
 client = AsyncMongoClient(URI)
 
 
-# joshuajar1331_db_user
-# Hn2rTTYUygtZb5WC
-
-
 database = client.bankdb
 
 

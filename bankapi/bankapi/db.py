@@ -1,16 +1,30 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from pymongo import AsyncMongoClient
+from beanie import init_beanie
+
+from bankapi.models.user import User
+from bankapi.models.account import Account
+from bankapi.models.transaction import Transaction
+
+URI = "mongodb+srv://joshuajar1331_db_user:Hn2rTTYUygtZb5WC@bankdb.4homz0h.mongodb.net"
+client = AsyncMongoClient(URI)
 
 
-DATABASE_URL = (
-    "postgresql+asyncpg://databaseuser:databasepassword@localhost:5432/bankdb"
-)
+# joshuajar1331_db_user
+# Hn2rTTYUygtZb5WC
 
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,  # logs SQL queries
-)
 
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    expire_on_commit=False,
-)
+database = client.bankdb
+
+
+users_collection = database.users
+accounts_collection = database.accounts
+transactions_collection = database.transactions
+
+
+async def init_db():
+
+    client = AsyncMongoClient(URI)
+
+    database = client.mybank
+
+    await init_beanie(database=database, document_models=[User, Account, Transaction])

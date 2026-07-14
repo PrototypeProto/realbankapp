@@ -1,9 +1,15 @@
-from sqlmodel import SQLModel, Field
 from datetime import datetime
 
+from beanie import Document
+from pydantic import Field
+from pymongo import IndexModel
 
-class User(SQLModel, table=True):
-    user_id: int = Field(ge=1)  # pk
-    name: str = Field(max_length=100)
-    email: str = Field(max_length=100)  # unique
-    created_at: datetime = Field(default=datetime.now)  # errors?
+
+class User(Document):
+    name: str
+    email: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "users"
+        indexes = [IndexModel([("email", 1)], unique=True)]

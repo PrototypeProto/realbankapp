@@ -1,15 +1,13 @@
 from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import Optional
 from decimal import Decimal
 
-from beanie import Document, PydanticObjectId
-from pydantic import Field
 
+class Account(BaseModel):
+    id: Optional[str] = Field(default=None, alias="_id")
 
-class Account(Document):
-    user_id: PydanticObjectId
+    user_id: str
     balance: Decimal = Decimal("0.00")
     account_type: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    class Settings:
-        name = "accounts"

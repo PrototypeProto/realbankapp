@@ -1,0 +1,91 @@
+services:
+  bank-db-dev:
+    profiles: [dev, test]
+    container_name: bankdb-dev
+    image: dhi.io/postgres:18.3-debian13
+    shm_size: 1024mb
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - bankapp_pgsql_test:/var/lib/postgresql
+    env_file:
+      - .env.db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend-net
+
+  bank-db-prod:
+    profiles: [prod]
+    container_name: bankdb-prod
+    image: dhi.io/postgres:18.3-debian13
+    shm_size: 1024mb
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - bankapp_pgsql_prod:/var/lib/postgresql
+    env_file:
+      - .env.prod.db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend-net
+
+  bank-server-dev:
+    profiles: [dev, test]
+    container_name: bank-api-dev
+    build:
+      context: ./bankapi
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./bankapi:/server
+    environment:
+      SPRING_PROFILES_ACTIVE: ${COMPOSE_PROFILES}
+    env_file:
+      - .env.server
+      - .env.db
+    depends_on:
+      bank-db-dev:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  li-server-prod:
+    profiles: [prod]
+    container_name: bank-api-prod
+    build:
+      context: ./bankapi
+      dockerfile: Dprod.Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    env_file:
+      - .env.prod.server
+      - .env.prod.db
+    depends_on:
+      bank-db-prod:
+        condition: service_healthy
+    # volumes:
+    #   - ./bankapi:/server
+    restart: always
+    networks:
+      - backend-net
+
+volumes:
+  bankapp_pgsql_test:
+  bankapp_pgsql_prod:
+
+networks:
+  backend-net:
+    driver: bridge

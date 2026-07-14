@@ -5,7 +5,9 @@ from bankapi.models.user import User
 from bankapi.models.account import Account
 from bankapi.models.transaction import Transaction
 
-URI = "mongodb+srv://joshuajar1331_db_user:Hn2rTTYUygtZb5WC@bankdb.4homz0h.mongodb.net"
+from bankapi.config import db_pwd, db_user
+
+URI = f"mongodb+srv://{db_user}:{db_pwd}@bankdb.4homz0h.mongodb.net/?appName=bankdb"
 client = AsyncMongoClient(URI)
 
 

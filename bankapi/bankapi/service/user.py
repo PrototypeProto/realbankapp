@@ -19,7 +19,7 @@ class UserService:
         return user
 
     async def list_users(self, limit: int = 50, skip: int = 0) -> list[User]:
-        return await self.users.list(limit=limit, skip=skip)
+        return await self.users.get_all(limit=limit, skip=skip)
 
 
 user_service = UserService(users=user_repository)

@@ -12,7 +12,6 @@ from bankapi.util.common import utcnow
 class AccountType(StrEnum):
     SAVINGS = "SAVINGS"
     CHECKING = "CHECKING"
-    CURRENT = "CURRENT"
 
 
 class Account(Document):

@@ -22,7 +22,7 @@ class UserRepository:
     async def exists(self, user_id: PydanticObjectId) -> bool:
         return await User.find_one(User.id == user_id).exists()
 
-    async def list(self, limit: int = 50, skip: int = 0) -> list[User]:
+    async def get_all(self, limit: int = 50, skip: int = 0) -> list[User]:
         return (
             await User.find_all()
             .sort(-User.created_at)

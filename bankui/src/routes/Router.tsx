@@ -1,0 +1,34 @@
+import { createBrowserRouter } from "react-router";
+import { DashboardPage } from "../pages/DashboardPage";
+import { HomePage } from "../pages/HomePage";
+import { RegisterPage } from "../pages/RegisterPage";
+import { RequireUser } from "./RequireUser";
+import { RootLayout } from "./RootLayout";
+
+/**
+ * Three routes:
+ *   /           Home      — select a user (logs in), or link to register
+ *   /register   Register  — create a user, auto-login
+ *   /dashboard  Dashboard — the workspace; guarded, needs a selected user
+ *
+ * Everything that used to be its own page (account details, deposit, withdraw,
+ * transfer, transactions) is now a component inside the dashboard.
+ */
+export const router = createBrowserRouter([
+	{
+		path: "/",
+		Component: RootLayout,
+		children: [
+			{ index: true, Component: HomePage },
+			{ path: "register", Component: RegisterPage },
+			{
+				path: "dashboard",
+				element: (
+					<RequireUser>
+						<DashboardPage />
+					</RequireUser>
+				),
+			},
+		],
+	},
+]);

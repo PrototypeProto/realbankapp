@@ -1,0 +1,20 @@
+# MongoDB for tests only, uses a docker hardended image which requires login to dhi.io
+services:
+  test-db:
+    image: dhi.io/mongodb:8-debian-dev
+    container_name: bankdb-test
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27017:27017"
+    tmpfs:
+      - /data/db # db loaded in-memory only
+    healthcheck:
+      # Idempotent: initiates the replica set on first boot, no-ops afterwards.
+      # Until this passes, `depends_on ... condition: service_healthy` waits.
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) {
+        rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 3s

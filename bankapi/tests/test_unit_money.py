@@ -1,4 +1,3 @@
-# tests/test_unit_money.py — no DB, no container, runs in milliseconds
 from decimal import Decimal
 
 import pytest

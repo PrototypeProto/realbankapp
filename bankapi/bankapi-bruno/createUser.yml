@@ -1,0 +1,21 @@
+info:
+  name: createUser
+  type: http
+
+http:
+  method: POST
+  url: "{{baseUrl}}/users?name&email"
+  params:
+    - name: name
+      value: ""
+      type: query
+    - name: email
+      value: ""
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

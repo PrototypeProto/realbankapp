@@ -10,9 +10,7 @@ import type { ApiErrorBody, ApiErrorCode } from "./types";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 /**
- * Thrown for any non-2xx response. Carries the API's machine-readable `code`
- * so callers can branch (e.g. show a friendly message for insufficient_funds)
- * without string-matching on the human text.
+ * Thrown for any non-2xx response.
  */
 export class ApiError extends Error {
 	readonly status: number;
@@ -51,8 +49,7 @@ export async function request<T>(
 	});
 
 	if (!res.ok) {
-		// The API always sends the {error, detail} envelope, but guard the parse in
-		// case a proxy or network layer returns something else.
+		// The API always sends the {error, detail} envelope, guard against unusual returns
 		let parsed: ApiErrorBody | null = null;
 		try {
 			parsed = (await res.json()) as ApiErrorBody;

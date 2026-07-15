@@ -35,7 +35,7 @@ export function useAsync<T>(
 		fnRef.current = fn;
 	});
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <deps is caller-declared and spread, which the linter can't analyse statically; the stale-closure risk it warns about is handled by fnRef>
 	useEffect(() => {
 		const controller = new AbortController();
 		setState((s) => ({ ...s, loading: true, error: null }));
@@ -49,9 +49,6 @@ export function useAsync<T>(
 			});
 
 		return () => controller.abort();
-		// deps is caller-declared and spread, which the linter can't analyse
-		// statically; the stale-closure risk it warns about is handled by fnRef.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [...deps, nonce]);
 
 	const reload = useCallback(() => setNonce((n) => n + 1), []);

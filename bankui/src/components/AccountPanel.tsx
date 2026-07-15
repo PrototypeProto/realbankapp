@@ -55,6 +55,9 @@ export function AccountPanel({
 	const rows = txns ?? [];
 	const modes: TxnMode[] = ["deposit", "withdraw", "transfer"];
 
+	// Spinner only when there's nothing to show yet
+	const isFirstLoad = loading && rows.length === 0;
+
 	return (
 		<div className="account-panel">
 			<div className="account-panel__summary">
@@ -91,7 +94,7 @@ export function AccountPanel({
 			<div className="account-panel__history">
 				<h4>Transactions</h4>
 				<StatusMessage
-					loading={loading}
+					loading={isFirstLoad}
 					error={error}
 					empty={!loading && rows.length === 0}
 				>

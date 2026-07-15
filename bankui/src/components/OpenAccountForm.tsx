@@ -10,8 +10,7 @@ const ACCOUNT_TYPES: AccountType[] = ["SAVINGS", "CHECKING"];
 
 /**
  * Open an account for the logged-in user. The userId comes from context, not a
- * form field — that's the point of "logging in". Calls `onCreated` so the
- * parent (dashboard) can refresh its account list.
+ * form field
  */
 interface OpenAccountFormProps {
 	onCreated?: () => void;
@@ -24,8 +23,7 @@ export function OpenAccountForm({ onCreated }: OpenAccountFormProps) {
 	const [accountType, setAccountType] = useState<AccountType>("SAVINGS");
 	const [initialDeposit, setInitialDeposit] = useState("");
 
-	async function handleSubmit(e: React.SubmitEvent) {
-		e.preventDefault();
+	async function handleSubmit() {
 		if (!user) return;
 		const account = await run({
 			userId: user.userId,
@@ -39,7 +37,7 @@ export function OpenAccountForm({ onCreated }: OpenAccountFormProps) {
 	}
 
 	return (
-		<form className="open-account" onSubmit={handleSubmit}>
+		<div className="open-account">
 			<h3>Open a new account</h3>
 
 			<Field label="Account type" htmlFor="new-account-type">
@@ -63,14 +61,19 @@ export function OpenAccountForm({ onCreated }: OpenAccountFormProps) {
 					value={initialDeposit}
 					onChange={(e) => setInitialDeposit(e.target.value)}
 					placeholder="0.00"
+					onKeyDown={(e) => {
+						if (e.key === "Enter" && !loading) {
+							handleSubmit();
+						}
+					}}
 				/>
 			</Field>
 
-			<button type="submit" disabled={loading}>
-				{loading ? "Opening..." : "Open account"}
+			<button type="button" onClick={handleSubmit} disabled={loading}>
+				{loading ? "Opening…" : "Open account"}
 			</button>
 
 			<StatusMessage error={error} />
-		</form>
+		</div>
 	);
 }

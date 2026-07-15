@@ -9,11 +9,9 @@ import { AccountPanel } from "./AccountPanel";
 
 /**
  * The logged-in user's accounts (GET /api/users/{id}/accounts). Clicking a row
- * expands its AccountPanel inline beneath it. Exposes a `reloadKey` refresh via
- * the parent so opening a new account re-lists.
+ * expands its AccountPanel inline beneath it.
  *
- * `refreshSignal` — bump this number from the parent (e.g. after OpenAccountForm
- * succeeds) to force a re-fetch of the list.
+ * `refreshSignal` — forces a re-fetch of the list.
  */
 interface AccountListProps {
 	refreshSignal?: number;
@@ -35,6 +33,9 @@ export function AccountList({ refreshSignal = 0 }: AccountListProps) {
 
 	const list = accounts ?? [];
 
+	// Show the spinner only on the FIRST load (nothing to display yet)
+	const isFirstLoad = loading && list.length === 0;
+
 	function toggle(id: string) {
 		setExpandedId((cur) => (cur === id ? null : id));
 	}
@@ -43,7 +44,7 @@ export function AccountList({ refreshSignal = 0 }: AccountListProps) {
 		<div className="account-list">
 			<h2>Accounts</h2>
 			<StatusMessage
-				loading={loading}
+				loading={isFirstLoad}
 				error={error}
 				empty={!loading && list.length === 0}
 			>

@@ -1,11 +1,8 @@
 /**
- * One function per API endpoint. This is the whole surface the UI is allowed to
- * touch — components call these, never `fetch` directly. Grouping mirrors the
- * backend routers (users / accounts / transfers).
+ * Grouping mirrors the backend routers (users / accounts / transfers).
  *
  * Read endpoints accept an optional AbortSignal so useAsync can cancel a fetch
- * on unmount/refetch. Write endpoints don't (you rarely want to abort a POST
- * that may already have moved money).
+ * on unmount/refetch. Write endpoints don't (not idempotent)
  */
 
 import { request } from "./client";

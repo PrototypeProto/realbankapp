@@ -11,7 +11,7 @@ import { StatusMessage } from "./StatusMessage";
  * Home page and (compactly) in the dashboard's UserSwitcher.
  */
 interface UserSelectorProps {
-	redirectTo?: string | null; // where to go after selecting; default /dashboard
+	redirectTo?: string | null;
 }
 
 export function UserSelector({ redirectTo = "/dashboard" }: UserSelectorProps) {

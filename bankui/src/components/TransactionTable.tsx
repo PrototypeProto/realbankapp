@@ -2,9 +2,7 @@ import type { TransactionOut } from "../api";
 import { Money } from "./Money";
 
 /**
- * The Transaction History table (spec 7.6): ID, Type, Amount, Date.
- * Pure presentation — hand it the array, it renders. Empty/loading are the
- * caller's job (wrap in <StatusMessage>).
+ * The Transaction History table: ID, Type, Amount, Date.
  */
 interface TransactionTableProps {
 	transactions: TransactionOut[];

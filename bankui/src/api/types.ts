@@ -11,11 +11,8 @@
  * timestamps arrive as ISO-8601 strings.
  */
 
-// A Mongo ObjectId, as it appears on the wire.
 export type ObjectId = string;
 
-// The API emits only these two today (openapi.json). CURRENT was dropped from
-// the enum, so don't offer it in the UI or a create will 422.
 export type AccountType = "SAVINGS" | "CHECKING";
 
 export type TxnType = "DEPOSIT" | "WITHDRAW" | "TRANSFER_IN" | "TRANSFER_OUT";
@@ -32,7 +29,7 @@ export interface UserOut {
 export interface AccountOut {
 	accountId: ObjectId;
 	userId: ObjectId;
-	userName: string; // joined in by the API; not stored on the account
+	userName: string;
 	balance: number;
 	accountType: AccountType;
 	createdAt: string;

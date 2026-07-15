@@ -36,7 +36,6 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
 
 	const setUser = useCallback((next: UserOut | null) => {
 		setUserState(next);
-		// To persist: localStorage.setItem("currentUser", JSON.stringify(next));
 	}, []);
 
 	const clear = useCallback(() => setUser(null), [setUser]);

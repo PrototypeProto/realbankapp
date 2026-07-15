@@ -10,9 +10,6 @@ import { RootLayout } from "./RootLayout";
  *   /           Home      — select a user (logs in), or link to register
  *   /register   Register  — create a user, auto-login
  *   /dashboard  Dashboard — the workspace; guarded, needs a selected user
- *
- * Everything that used to be its own page (account details, deposit, withdraw,
- * transfer, transactions) is now a component inside the dashboard.
  */
 export const router = createBrowserRouter([
 	{

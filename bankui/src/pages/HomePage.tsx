@@ -2,7 +2,7 @@ import { UserSelector } from "../components/UserSelector";
 import { Link } from "react-router";
 
 /**
- * Home (spec 7.1): headers + user selection. Picking a user "logs in" and
+ * headers + user selection. Picking a user "logs in" and
  * routes to the dashboard. No account data here by design.
  */
 export function HomePage() {

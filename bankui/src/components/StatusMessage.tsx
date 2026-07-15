@@ -36,7 +36,7 @@ export function StatusMessage({
 	return <>{children}</>;
 }
 
-// TODO: expand this mapping as you design the copy for each failure.
+// expand this mapping as you design the copy for each failure.
 function errorText(error: ApiError): string {
 	switch (error.code) {
 		case "insufficient_funds":

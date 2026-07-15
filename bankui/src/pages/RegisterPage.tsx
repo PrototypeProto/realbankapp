@@ -5,7 +5,7 @@ import type { UserCreate } from "../api";
 import { useAsyncFn } from "../hooks/useAsync";
 import { useCurrentUser } from "../context/CurrentUserContext";
 import { Field } from "../components/Field";
-import { StatusMessage } from "../components/StatusMessage";
+import { toDisplayError } from "../api/error";
 
 /**
  * Register (create a user). On success we auto-select the new user (log them in)
@@ -17,8 +17,10 @@ export function RegisterPage() {
 	const { run, loading, error } = useAsyncFn(usersApi.create);
 	const [form, setForm] = useState<UserCreate>({ name: "", email: "" });
 
-	async function handleSubmit(e: React.SubmitEvent) {
-		e.preventDefault();
+	// Normalize once per render.
+	const display = error ? toDisplayError(error) : null;
+
+	async function handleSubmit() {
 		const user = await run(form);
 		if (user) {
 			setUser(user);
@@ -29,27 +31,35 @@ export function RegisterPage() {
 	return (
 		<section className="page page--register">
 			<h1>Create a user</h1>
-			<form onSubmit={handleSubmit}>
-				<Field label="Name" htmlFor="name">
-					<input
-						id="name"
-						value={form.name}
-						onChange={(e) => setForm({ ...form, name: e.target.value })}
-					/>
-				</Field>
-				<Field label="Email" htmlFor="email">
-					<input
-						id="email"
-						type="email"
-						value={form.email}
-						onChange={(e) => setForm({ ...form, email: e.target.value })}
-					/>
-				</Field>
-				<button type="submit" disabled={loading}>
-					{loading ? "Creating…" : "Create user"}
-				</button>
-			</form>
-			<StatusMessage error={error} />
+
+			<Field label="Name" htmlFor="name" error={display?.fields?.name}>
+				<input
+					id="name"
+					value={form.name}
+					onChange={(e) => setForm({ ...form, name: e.target.value })}
+				/>
+			</Field>
+
+			<Field label="Email" htmlFor="email" error={display?.fields?.email}>
+				<input
+					id="email"
+					// NOTE: type="text", not "email" — see below
+					value={form.email}
+					onChange={(e) => setForm({ ...form, email: e.target.value })}
+				/>
+			</Field>
+
+			<button type="button" onClick={handleSubmit} disabled={loading}>
+				{loading ? "Creating…" : "Create user"}
+			</button>
+
+			{/* Top-level message for domain/network errors (e.g. duplicate email 409,
+          server unreachable). Field errors render inline above via Field. */}
+			{display && display.kind !== "validation" && (
+				<p className="status status--error" role="alert">
+					{display.message}
+				</p>
+			)}
 		</section>
 	);
 }

@@ -11,10 +11,14 @@ export type TxnMode = "deposit" | "withdraw" | "transfer";
  * Deposit, withdraw, and transfer share this one form; `mode` switches the
  * endpoint and the extra "destination" field for transfers.
  *
- * For transfers, the destination is chosen from the user's OTHER accounts —
- * the API enforces that both accounts share an owner, so offering only same-user
- * accounts keeps the UI from ever triggering that 422. `siblingAccounts` is the
- * full account list; we filter out the source.
+ * For transfers, the destination is chosen from the user's OTHER accounts — the
+ * API enforces that both accounts share an owner, so offering only same-user
+ * accounts keeps the UI from ever triggering that 422.
+ *
+ * NB: this is a plain <div>, not a <form>. There's no native form submit, so
+ * nothing can trigger a full-page reload — the action runs on the button's
+ * onClick. (A <form>+submit reloads the page unless preventDefault fires on
+ * exactly the right event; sidestepping the form removes that class of bug.)
  */
 interface TransactionFormProps {
 	account: AccountOut;
@@ -41,8 +45,9 @@ export function TransactionForm({
 	const [amount, setAmount] = useState("");
 	const [toAccountId, setToAccountId] = useState(others[0]?.accountId ?? "");
 
-	async function handleSubmit(e: React.SubmitEvent) {
-		e.preventDefault();
+	// No event parameter — runs from onClick, not a form submit, so there's no
+	// default navigation to prevent and no FormEvent/SubmitEvent to type.
+	async function handleSubmit() {
 		let ok: unknown;
 		if (mode === "deposit") {
 			ok = await deposit.run(account.accountId, { amount });
@@ -63,9 +68,10 @@ export function TransactionForm({
 	}
 
 	const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+	const transferBlocked = mode === "transfer" && others.length === 0;
 
 	return (
-		<form className="txn-form" onSubmit={handleSubmit}>
+		<div className="txn-form">
 			{mode === "transfer" && (
 				<Field label="To account" htmlFor="txn-to">
 					<select
@@ -94,19 +100,24 @@ export function TransactionForm({
 					value={amount}
 					onChange={(e) => setAmount(e.target.value)}
 					placeholder="0.00"
+					onKeyDown={(e) => {
+						// Enter-to-submit, since there's no form to do it for us.
+						if (e.key === "Enter" && !active.loading && !transferBlocked) {
+							handleSubmit();
+						}
+					}}
 				/>
 			</Field>
 
 			<button
-				type="submit"
-				disabled={
-					active.loading || (mode === "transfer" && others.length === 0)
-				}
+				type="button"
+				onClick={handleSubmit}
+				disabled={active.loading || transferBlocked}
 			>
 				{active.loading ? `${label}ing…` : label}
 			</button>
 
 			<StatusMessage error={active.error} />
-		</form>
+		</div>
 	);
 }

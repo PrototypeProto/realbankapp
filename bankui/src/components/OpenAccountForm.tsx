@@ -67,7 +67,7 @@ export function OpenAccountForm({ onCreated }: OpenAccountFormProps) {
 			</Field>
 
 			<button type="submit" disabled={loading}>
-				{loading ? "Opening…" : "Open account"}
+				{loading ? "Opening..." : "Open account"}
 			</button>
 
 			<StatusMessage error={error} />

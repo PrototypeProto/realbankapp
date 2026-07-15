@@ -1,10 +1,41 @@
-import os
-from dotenv import load_dotenv
+from functools import lru_cache
+from urllib.parse import quote_plus
 
-load_dotenv()
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-db_user = os.getenv("MONGOUSER", "MISSING")
-db_pwd = os.getenv("MONGOPASSWORD", "MISSING")
 
-# print(db_user)
-# print(db_pwd)
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Set MONGOURI to bypass the SRV builder — needed for a local container
+    # (mongodb://bank-db-dev:27017/?replicaSet=rs0), since +srv only resolves
+    # against DNS seedlists like Atlas.
+    mongo_uri_override: str | None = Field(default=None, alias="MONGOURI")
+
+    mongo_user: str = Field(default="", alias="MONGOUSER")
+    mongo_password: str = Field(default="", alias="MONGOPASSWORD")
+    mongo_host: str = Field(default="", alias="MONGOHOST")
+    mongo_db: str = Field(default="", alias="MONGODB")
+    app_name: str = Field(default="", alias="MONGOAPPNAME")
+
+    # Multi-document transactions need a replica set. Atlas is one.
+    use_transactions: bool = Field(default=True, alias="USE_TRANSACTIONS")
+
+    @property
+    def mongo_uri(self) -> str:
+        if self.mongo_uri_override:
+            return self.mongo_uri_override
+        if not (self.mongo_user and self.mongo_password):
+            raise ValueError("set MONGOURI, or both MONGOUSER and MONGOPASSWORD")
+        user = quote_plus(self.mongo_user)  # passwords with @ : / would
+        pwd = quote_plus(self.mongo_password)  # otherwise corrupt the URI
+        return f"mongodb+srv://{user}:{pwd}@{self.mongo_host}/?appName={self.app_name}"
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()  # type: ignore[call-arg]
+
+
+settings = get_settings()

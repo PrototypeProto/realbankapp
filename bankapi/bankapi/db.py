@@ -1,28 +1,46 @@
-from pymongo import AsyncMongoClient
-from beanie import init_beanie
+"""One client for the whole process, created on startup and closed on shutdown.
+Beanie owns the collections — there are no module-level `users_collection`
+handles, because two ways to touch the same data is how schemas drift."""
 
-from bankapi.models.user import User
+from beanie import init_beanie
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.database import AsyncDatabase
+
+from bankapi.config import settings
 from bankapi.models.account import Account
 from bankapi.models.transaction import Transaction
+from bankapi.models.user import User
 
-from bankapi.config import db_pwd, db_user
+_client: AsyncMongoClient | None = None
 
-URI = f"mongodb+srv://{db_user}:{db_pwd}@bankdb.4homz0h.mongodb.net/?appName=bankdb"
-client = AsyncMongoClient(URI)
-
-
-database = client.bankdb
+DOCUMENT_MODELS = [User, Account, Transaction]
 
 
-users_collection = database.users
-accounts_collection = database.accounts
-transactions_collection = database.transactions
+def get_client() -> AsyncMongoClient:
+    if _client is None:
+        raise RuntimeError("Mongo client not initialised. Did the lifespan hook run?")
+    return _client
 
 
-async def init_db():
+def get_database() -> AsyncDatabase:
+    return get_client()[settings.mongo_db]
 
-    client = AsyncMongoClient(URI)
 
-    database = client.mybank
+async def init_db() -> None:
+    global _client
+    _client = AsyncMongoClient(settings.mongo_uri, tz_aware=True)
+    await init_beanie(
+        database=_client[settings.mongo_db], document_models=DOCUMENT_MODELS
+    )
 
-    await init_beanie(database=database, document_models=[User, Account, Transaction])
+
+async def close_db() -> None:
+    global _client
+    if _client is not None:
+        await _client.close()
+        _client = None
+
+
+async def ping() -> bool:
+    await get_client().admin.command("ping")
+    return True

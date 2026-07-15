@@ -1,0 +1,278 @@
+/* Simple, unopinionated styling. Swap the tokens below for your own palette.
+   Kept flat and class-based so it's easy to read and override. */
+
+:root {
+	--bg: #f4f5f7;
+	--surface: #ffffff;
+	--border: #e2e5ea;
+	--text: #1c1f23;
+	--muted: #6b7280;
+	--accent: #2563eb;
+	--accent-weak: #eff4ff;
+	--danger: #b42318;
+	--radius: 10px;
+	--gap: 1rem;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+}
+
+/* --- app shell ----------------------------------------------------------- */
+
+.app__bar {
+	display: flex;
+	align-items: center;
+	padding: 0.75rem 1.5rem;
+	background: var(--surface);
+	border-bottom: 1px solid var(--border);
+}
+
+.app__brand {
+	font-weight: 700;
+	font-size: 1.1rem;
+	text-decoration: none;
+	color: var(--text);
+}
+
+.app__main {
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 1.5rem;
+}
+
+/* --- pages ---------------------------------------------------------------- */
+
+.page {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap);
+}
+
+.home__hero {
+	text-align: center;
+	padding: 2rem 0 1rem;
+}
+
+.home__hero h1 {
+	margin: 0;
+	font-size: 2rem;
+}
+
+.home__hero p {
+	color: var(--muted);
+	margin: 0.25rem 0 0;
+}
+
+.home__register {
+	text-align: center;
+	color: var(--muted);
+}
+
+.dashboard__grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.5rem;
+}
+
+/* --- cards / generic surfaces -------------------------------------------- */
+
+.user-selector,
+.open-account,
+.account-list,
+.user-switcher,
+.account-panel {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1.25rem;
+}
+
+/* --- forms --------------------------------------------------------------- */
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin-bottom: 0.9rem;
+}
+
+.field label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--muted);
+}
+
+.field input,
+.field select,
+.user-selector select {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	font-size: 0.95rem;
+	background: #fff;
+}
+
+.field input:focus,
+.field select:focus,
+select:focus,
+button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+button {
+	padding: 0.55rem 1rem;
+	border: 1px solid var(--accent);
+	background: var(--accent);
+	color: #fff;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	cursor: pointer;
+}
+
+button:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* --- user switcher ------------------------------------------------------- */
+
+.user-switcher {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.user-switcher button {
+	background: transparent;
+	color: var(--accent);
+}
+
+/* --- account list -------------------------------------------------------- */
+
+.account-list ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.account-list__row {
+	width: 100%;
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	gap: 1rem;
+	align-items: center;
+	text-align: left;
+	background: var(--accent-weak);
+	color: var(--text);
+	border: 1px solid var(--border);
+}
+
+.account-list__row[aria-expanded="true"] {
+	border-color: var(--accent);
+}
+
+.muted {
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+/* --- account panel (expanded) -------------------------------------------- */
+
+.account-panel {
+	margin-top: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.account-panel__summary {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-size: 1.1rem;
+}
+
+.tabs {
+	display: flex;
+	gap: 0.25rem;
+	margin-bottom: 0.75rem;
+}
+
+.tab {
+	background: transparent;
+	color: var(--muted);
+	border: 1px solid var(--border);
+}
+
+.tab--active {
+	background: var(--accent);
+	color: #fff;
+	border-color: var(--accent);
+}
+
+/* --- transactions table -------------------------------------------------- */
+
+.txn-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.txn-table th,
+.txn-table td {
+	text-align: left;
+	padding: 0.5rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.txn-table th {
+	color: var(--muted);
+	font-weight: 600;
+}
+
+.pager {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+}
+
+.pager button {
+	background: transparent;
+	color: var(--accent);
+}
+
+/* --- status messages ----------------------------------------------------- */
+
+.status {
+	padding: 0.5rem 0;
+	color: var(--muted);
+}
+
+.status--error {
+	color: var(--danger);
+}
+
+.money {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
+@media (min-width: 720px) {
+	.dashboard__grid {
+		grid-template-columns: 2fr 1fr;
+		align-items: start;
+	}
+}

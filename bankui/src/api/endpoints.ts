@@ -12,7 +12,6 @@ import type {
 	AccountOut,
 	AmountIn,
 	LoginIn,
-	MeOut,
 	ObjectId,
 	RegisterIn,
 	RoleUpdate,
@@ -35,7 +34,7 @@ export const authApi = {
 	logout: () => request<void>("/api/auth/logout", { method: "POST" }),
 
 	// GET  /api/auth/me         current user (rehydrates session from cookie)
-	me: (signal?: AbortSignal) => request<MeOut>("/api/auth/me", { signal }),
+	me: (signal?: AbortSignal) => request<UserOut>("/api/auth/me", { signal }),
 };
 
 export const usersApi = {
@@ -54,6 +53,10 @@ export const usersApi = {
 			body: payload,
 		}),
 
+	// DELETE /api/users/{id}   admin: hard-delete user + cascade accounts
+	deleteUser: (userId: ObjectId) =>
+		request<void>(`/api/users/${userId}`, { method: "DELETE" }),
+
 	// GET  /api/users/{userId}/accounts   self or admin
 	listAccounts: (userId: ObjectId, signal?: AbortSignal) =>
 		request<AccountOut[]>(`/api/users/${userId}/accounts`, { signal }),
@@ -63,6 +66,13 @@ export const accountsApi = {
 	// POST /api/accounts        admin only (opens for a given userId)
 	create: (payload: AccountCreate) =>
 		request<AccountOut>("/api/accounts", { method: "POST", body: payload }),
+
+	// DELETE /api/accounts/{id}   close own account, sweeping balance to another
+	close: (accountId: ObjectId, destinationAccountId?: ObjectId) =>
+		request(`/api/accounts/${accountId}`, {
+			method: "DELETE",
+			body: destinationAccountId ? { destinationAccountId } : {},
+		}),
 
 	// GET  /api/accounts/{accountId}   owner or admin
 	get: (accountId: ObjectId, signal?: AbortSignal) =>

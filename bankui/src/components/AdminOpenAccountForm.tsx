@@ -21,7 +21,9 @@ export function AdminOpenAccountForm({
 }: AdminOpenAccountFormProps) {
 	const { run, loading, error, data } = useAsyncFn(accountsApi.create);
 
-	const [userId, setUserId] = useState(users[0]?.userId ?? "");
+	const [chosenUserId, setUserId] = useState<string | null>(null);
+	const userId = chosenUserId ?? users[0]?.userId ?? "";
+
 	const [accountType, setAccountType] = useState<AccountType>("SAVINGS");
 	const [initialDeposit, setInitialDeposit] = useState("");
 

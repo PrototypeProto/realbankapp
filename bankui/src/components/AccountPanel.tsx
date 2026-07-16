@@ -7,7 +7,7 @@ import { StatusMessage } from "./StatusMessage";
 import { TransactionTable } from "./TransactionTable";
 import { TransactionForm, type TxnMode } from "./TransactionForm";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 /**
  * The expanded detail for one account: balance, the three action tabs

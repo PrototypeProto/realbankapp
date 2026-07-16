@@ -20,12 +20,12 @@ import {
 	useState,
 } from "react";
 import { authApi } from "../api";
-import type { LoginIn, RegisterIn, Role, UserOut } from "../api";
+import type { LoginIn, RegisterIn, Role, UserOut, MeOut } from "../api";
 
 type Status = "loading" | "authenticated" | "unauthenticated";
 
 interface AuthContextValue {
-	user: UserOut | null;
+	user: MeOut | null;
 	role: Role | null;
 	status: Status;
 	isAdmin: boolean;
@@ -37,7 +37,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState<UserOut | null>(null);
+	const [user, setUser] = useState<MeOut | null>(null);
 	const [status, setStatus] = useState<Status>("loading");
 
 	// On first mount, ask the server who we are (via the cookie).

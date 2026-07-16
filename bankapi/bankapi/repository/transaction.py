@@ -41,6 +41,17 @@ class TransactionRepository:
             .to_list()
         )
 
+    async def delete_for_account(
+        self,
+        account_id: PydanticObjectId,
+        *,
+        session: AsyncClientSession | None = None,
+    ) -> int:
+        res = await Transaction.find(Transaction.account_id == account_id).delete(
+            session=session
+        )
+        return res.deleted_count if res is not None else 0
+
     async def count_for_account(self, account_id: PydanticObjectId) -> int:
         return await Transaction.find(Transaction.account_id == account_id).count()
 

@@ -23,6 +23,26 @@ class AccountRepository:
     async def exists(self, account_id: PydanticObjectId) -> bool:
         return await Account.find_one(Account.id == account_id).exists()
 
+    async def delete(
+        self,
+        account_id: PydanticObjectId,
+        *,
+        session: AsyncClientSession | None = None,
+    ) -> None:
+        acct = await Account.get(account_id)
+        if acct is not None:
+            await acct.delete(session=session)
+
+    async def delete_for_user(
+        self,
+        user_id: PydanticObjectId,
+        *,
+        session: AsyncClientSession | None = None,
+    ) -> int:
+        """Delete ALL of a user's accounts. Returns how many were removed."""
+        res = await Account.find(Account.user_id == user_id).delete(session=session)
+        return res.deleted_count if res is not None else 0
+
     async def apply_delta(
         self,
         account_id: PydanticObjectId,

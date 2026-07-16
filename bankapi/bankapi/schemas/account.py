@@ -65,3 +65,9 @@ class TransferIn(CamelModel):
     from_account_id: PydanticObjectId
     to_account_id: PydanticObjectId
     amount: MoneyIn
+
+
+class CloseAccountIn(CamelModel):
+    """add a destination account if current acct being deleted bal > 0"""
+
+    destination_account_id: PydanticObjectId | None = None

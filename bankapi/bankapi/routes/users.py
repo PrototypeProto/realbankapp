@@ -1,5 +1,5 @@
 from beanie import PydanticObjectId
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status
 
 from bankapi.auth.dependencies import CurrentUser, get_current_user, require_admin
 from bankapi.errors import Forbidden
@@ -53,3 +53,15 @@ async def list_user_accounts(
     user = await user_service.get_user(user_id)
     accounts = await account_service.list_for_user(user_id)
     return [AccountOut.from_model(a, user_name=user.name) for a in accounts]
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: PydanticObjectId,
+    admin: CurrentUser = Depends(require_admin),
+):
+    """hard-delete a user and cascade-delete their accounts and
+    transactions. Money is destroyed (no sweep)."""
+    if user_id == admin.id:
+        raise Forbidden("you cannot delete your own account")
+    await account_service.delete_user_cascade(user_id)

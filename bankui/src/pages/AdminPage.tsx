@@ -6,6 +6,7 @@ import { useAsync } from "../hooks/useAsync";
 import { LogoutButton } from "../components/LogoutButton";
 import { StatusMessage } from "../components/StatusMessage";
 import { AdminOpenAccountForm } from "../components/AdminOpenAccountForm";
+import { useAuth } from "../context/AuthContext";
 import { useAsyncFn } from "../hooks/useAsync";
 
 /**
@@ -14,6 +15,8 @@ import { useAsyncFn } from "../hooks/useAsync";
  * but money movement stays owner-only (enforced by the API).
  */
 export function AdminPage() {
+	const { user } = useAuth();
+	const selfId = user?.userId ?? null;
 	const [refresh, setRefresh] = useState(0);
 
 	const {
@@ -57,6 +60,7 @@ export function AdminPage() {
 									<UserRow
 										key={u.userId}
 										user={u}
+										selfId={selfId}
 										onChanged={() => setRefresh((n) => n + 1)}
 									/>
 								))}
@@ -74,16 +78,38 @@ export function AdminPage() {
 /** One user row with a promote button. */
 function UserRow({
 	user,
+	selfId,
 	onChanged,
 }: {
 	user: UserOut;
+	selfId: string | null;
 	onChanged: () => void;
 }) {
-	const { run, loading } = useAsyncFn(usersApi.setRole);
+	const promote = useAsyncFn(usersApi.setRole);
+	const remove = useAsyncFn(usersApi.deleteUser);
 
-	async function promote() {
-		const updated = await run(user.userId, { role: "admin" });
-		if (updated) onChanged();
+	// Two-step confirms. `confirming` tracks which action is mid-confirmation so
+	// only one inline prompt shows at a time.
+	const [confirming, setConfirming] = useState<null | "promote" | "delete">(
+		null,
+	);
+
+	const isSelf = user.userId === selfId;
+
+	async function doPromote() {
+		const updated = await promote.run(user.userId, { role: "admin" });
+		if (updated) {
+			setConfirming(null);
+			onChanged();
+		}
+	}
+
+	async function doDelete() {
+		await remove.run(user.userId);
+		if (!remove.error) {
+			setConfirming(null);
+			onChanged();
+		}
 	}
 
 	return (
@@ -92,10 +118,64 @@ function UserRow({
 			<td>{user.email}</td>
 			<td>{user.role}</td>
 			<td>
-				{user.role !== "admin" && (
-					<button type="button" onClick={promote} disabled={loading}>
-						{loading ? "…" : "Make admin"}
-					</button>
+				{confirming === "delete" ? (
+					<span className="confirm">
+						<span className="confirm__text">Delete {user.name}?</span>
+						<button
+							type="button"
+							className="btn-danger"
+							onClick={doDelete}
+							disabled={remove.loading}
+						>
+							{remove.loading ? "Deleting…" : "Yes"}
+						</button>
+						<button
+							type="button"
+							className="link-button"
+							onClick={() => setConfirming(null)}
+							disabled={remove.loading}
+						>
+							No
+						</button>
+					</span>
+				) : confirming === "promote" ? (
+					<span className="confirm">
+						<span className="confirm__text">Make {user.name} an admin?</span>
+						<button
+							type="button"
+							onClick={doPromote}
+							disabled={promote.loading}
+						>
+							{promote.loading ? "…" : "Yes"}
+						</button>
+						<button
+							type="button"
+							className="link-button"
+							onClick={() => setConfirming(null)}
+							disabled={promote.loading}
+						>
+							No
+						</button>
+					</span>
+				) : (
+					<span className="row-actions">
+						{/* Delete sits LEFT of Make admin, and is red. Hidden for
+						    your own row (the API blocks self-deletion anyway). */}
+						{!isSelf && (
+							<button
+								type="button"
+								className="btn-danger"
+								onClick={() => setConfirming("delete")}
+							>
+								Delete
+							</button>
+						)}
+						{user.role !== "admin" && (
+							<button type="button" onClick={() => setConfirming("promote")}>
+								Make admin
+							</button>
+						)}
+					</span>
 				)}
 			</td>
 		</tr>

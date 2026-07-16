@@ -6,6 +6,7 @@ import { Money } from "./Money";
 import { StatusMessage } from "./StatusMessage";
 import { TransactionTable } from "./TransactionTable";
 import { TransactionForm, type TxnMode } from "./TransactionForm";
+import { CloseAccountControl } from "./CloseAccountControl";
 
 const PAGE_SIZE = 10;
 
@@ -68,19 +69,26 @@ export function AccountPanel({
 			</div>
 
 			<div className="account-panel__actions">
-				<div className="tabs" role="tablist">
-					{modes.map((m) => (
-						<button
-							key={m}
-							role="tab"
-							aria-selected={mode === m}
-							className={mode === m ? "tab tab--active" : "tab"}
-							onClick={() => setMode(m)}
-							type="button"
-						>
-							{m.charAt(0).toUpperCase() + m.slice(1)}
-						</button>
-					))}
+				<div className="tabs-row">
+					<div className="tabs" role="tablist">
+						{modes.map((m) => (
+							<button
+								key={m}
+								role="tab"
+								aria-selected={mode === m}
+								className={mode === m ? "tab tab--active" : "tab"}
+								onClick={() => setMode(m)}
+								type="button"
+							>
+								{m.charAt(0).toUpperCase() + m.slice(1)}
+							</button>
+						))}
+					</div>
+					<CloseAccountControl
+						account={account}
+						siblingAccounts={siblingAccounts}
+						onClosed={handleActionDone}
+					/>
 				</div>
 
 				<TransactionForm

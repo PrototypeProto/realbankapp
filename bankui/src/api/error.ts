@@ -3,7 +3,7 @@ import { ApiError } from "./client";
 export interface DisplayError {
 	message: string; // top-level, always present
 	fields?: Record<string, string>; // field -> message, for validation errors
-	kind: "network" | "validation" | "domain" | "unknown";
+	kind: "network" | "validation" | "domain" | "auth" | "unknown";
 }
 
 export function toDisplayError(err: unknown): DisplayError {
@@ -18,11 +18,10 @@ export function toDisplayError(err: unknown): DisplayError {
 		return { message, kind: "network" };
 	}
 
-	// 3. FastAPI validation: has a `fields` array.
+	// FastAPI validation: has a `fields` array.
 	if (err.code === "validation_error" && err.body?.fields) {
 		const fields: Record<string, string> = {};
 		for (const f of err.body.fields) {
-			// field looks like "body.email" — take the last segment as the input name
 			const name = f.field.split(".").pop() ?? f.field;
 			fields[name] = f.message;
 		}
@@ -33,6 +32,11 @@ export function toDisplayError(err: unknown): DisplayError {
 		};
 	}
 
-	// 2. Domain error:  coded envelope.
+	// Auth failures — surfaced distinctly so pages can, e.g., redirect to login.
+	if (err.code === "unauthorized" || err.code === "forbidden") {
+		return { message: err.detail, kind: "auth" };
+	}
+
+	// Domain error: coded envelope.
 	return { message: err.detail, kind: "domain" };
 }

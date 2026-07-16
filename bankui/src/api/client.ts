@@ -1,17 +1,12 @@
 /**
- * The single choke point for talking to the API. Everything in api/endpoints.ts
- * goes through `request()`, so error handling, JSON parsing, and the base URL
- * live in exactly one place.
+ * The single choke point for talking to the API. Error handling, JSON parsing,
+ * the base URL, cookie credentials, and access-token refresh all live here.
  */
 
 import type { ApiErrorBody, ApiErrorCode } from "./types";
 
-// Vite env var; set VITE_API_BASE_URL in .env. Falls back to the dev server.
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
-/**
- * Thrown for any non-2xx response.
- */
 export class ApiError extends Error {
 	readonly status: number;
 	readonly code: ApiErrorCode | string;
@@ -25,7 +20,6 @@ export class ApiError extends Error {
 		this.body = body;
 	}
 
-	/** The human-readable string from the API envelope (falls back to message). */
 	get detail(): string {
 		return this.body?.detail ?? this.message;
 	}
@@ -35,21 +29,53 @@ interface RequestOptions {
 	method?: "GET" | "POST" | "PUT" | "DELETE";
 	body?: unknown;
 	signal?: AbortSignal;
+	// Internal: set when we've already retried after a refresh, to avoid loops.
+	_retried?: boolean;
 }
 
-export async function request<T>(
-	path: string,
-	{ method = "GET", body, signal }: RequestOptions = {},
-): Promise<T> {
-	const res = await fetch(`${BASE_URL}${path}`, {
+async function rawFetch(path: string, opts: RequestOptions): Promise<Response> {
+	const { method = "GET", body, signal } = opts;
+	return fetch(`${BASE_URL}${path}`, {
 		method,
 		headers: body ? { "Content-Type": "application/json" } : undefined,
 		body: body === undefined ? undefined : JSON.stringify(body),
 		signal,
+		credentials: "include",
 	});
+}
+
+/**
+ * Attempt a token refresh. Returns true if the refresh endpoint accepted our
+ * refresh cookie and minted a new access cookie. We call this once when a
+ * request 401s, then retry the original request.
+ */
+async function tryRefresh(): Promise<boolean> {
+	try {
+		const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
+			method: "POST",
+			credentials: "include",
+		});
+		return res.ok;
+	} catch {
+		return false;
+	}
+}
+
+export async function request<T>(
+	path: string,
+	opts: RequestOptions = {},
+): Promise<T> {
+	const res = await rawFetch(path, opts);
+
+	if (res.status === 401 && !opts._retried && path !== "/api/auth/refresh") {
+		// Access token likely expired.  a failed refresh returns false so we fall through to throw.
+		const refreshed = await tryRefresh();
+		if (refreshed) {
+			return request<T>(path, { ...opts, _retried: true });
+		}
+	}
 
 	if (!res.ok) {
-		// The API always sends the {error, detail} envelope, guard against unusual returns
 		let parsed: ApiErrorBody | null = null;
 		try {
 			parsed = (await res.json()) as ApiErrorBody;
@@ -59,7 +85,6 @@ export async function request<T>(
 		throw new ApiError(res.status, parsed);
 	}
 
-	// 204 No Content, or an empty body: nothing to parse.
 	if (res.status === 204) return undefined as T;
 	return (await res.json()) as T;
 }

@@ -1,6 +1,5 @@
 import { Link, Outlet } from "react-router";
 
-/** App shell. Minimal top bar; the dashboard carries its own UserSwitcher. */
 export function RootLayout() {
 	return (
 		<div className="app">

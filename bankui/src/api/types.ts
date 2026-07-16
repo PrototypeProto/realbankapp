@@ -1,14 +1,8 @@
 /**
- * TypeScript mirror of the backend DTOs.
+ * TypeScript mirror of the backend DTOs. Kept in sync with bankapi/openapi.json.
  *
- * These are hand-kept in sync with bankapi/openapi.json. If you change a schema
- * on the API, change it here too — or, better, generate this file from the spec
- * (see the note at the bottom) so it can't drift.
- *
- * Field names are camelCase because the API serialises that way (its Pydantic
- * models use alias_generator=to_camel). ObjectIds arrive as strings; money
- * arrives as JSON numbers (the API converts Decimal -> number at its boundary);
- * timestamps arrive as ISO-8601 strings.
+ * camelCase because the API serialises that way (alias_generator=to_camel).
+ * ObjectIds are strings; money is a JSON number; timestamps are ISO-8601.
  */
 
 export type ObjectId = string;
@@ -17,12 +11,15 @@ export type AccountType = "SAVINGS" | "CHECKING";
 
 export type TxnType = "DEPOSIT" | "WITHDRAW" | "TRANSFER_IN" | "TRANSFER_OUT";
 
-// --- responses (what you GET back) ------------------------------------------
+export type Role = "user" | "admin";
+
+// --- responses --------------------------------------------------------------
 
 export interface UserOut {
 	userId: ObjectId;
 	name: string;
 	email: string;
+	role: Role;
 	createdAt: string;
 }
 
@@ -52,11 +49,21 @@ export interface TransferOut {
 	credit: TransactionOut;
 }
 
-// --- requests (what you POST) -----------------------------------------------
+// --- requests ---------------------------------------------------------------
 
-export interface UserCreate {
+export interface RegisterIn {
 	name: string;
 	email: string;
+	password: string;
+}
+
+export interface LoginIn {
+	email: string;
+	password: string;
+}
+
+export interface RoleUpdate {
+	role: Role;
 }
 
 export interface AccountCreate {
@@ -65,7 +72,6 @@ export interface AccountCreate {
 	initialDeposit?: number | string | null;
 }
 
-// Deposit and withdraw share this body.
 export interface AmountIn {
 	amount: number | string;
 }
@@ -78,18 +84,14 @@ export interface TransferIn {
 
 // --- error envelope ---------------------------------------------------------
 
-/**
- * Every error the API returns has this shape (see main.py error_body):
- *   { "error": "insufficient_funds", "detail": "..." }
- * Validation failures add a `fields` array. `error` is the machine-readable
- * code you branch on; `detail` is the human string.
- */
 export type ApiErrorCode =
 	| "not_found"
 	| "conflict"
 	| "insufficient_funds"
 	| "invalid_operation"
 	| "validation_error"
+	| "unauthorized"
+	| "forbidden"
 	| "http_error"
 	| "internal_error"
 	| "domain_error";
@@ -99,11 +101,3 @@ export interface ApiErrorBody {
 	detail: string;
 	fields?: Array<{ field: string; message: string; type: string }>;
 }
-
-/*
- * TODO(optional): replace this file with generated types so it never drifts.
- *   pnpm add -D openapi-typescript
- *   pnpm openapi-typescript ../bankapi/openapi.json -o src/api/schema.ts
- * Then import from schema.ts instead. Kept hand-written here so the skeleton
- * has no build step to run first.
- */

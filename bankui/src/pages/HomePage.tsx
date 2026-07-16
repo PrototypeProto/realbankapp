@@ -1,23 +1,29 @@
-import { UserSelector } from "../components/UserSelector";
 import { Link } from "react-router";
+import { useAuth } from "../context/AuthContext";
 
 /**
- * headers + user selection. Picking a user "logs in" and
- * routes to the dashboard. No account data here by design.
+ * Bare public landing page.
  */
 export function HomePage() {
+	const { status } = useAuth();
+	const authed = status === "authenticated";
+
 	return (
 		<section className="page page--home">
-			<header className="home__hero">
-				<h1>The Banking App</h1>
-				<p>Banking with confidence.</p>
-			</header>
+			<div className="home__hero">
+				<h1>🏦 BankApp</h1>
+				<p className="muted">Simple banking for a simple project.</p>
 
-			<UserSelector redirectTo="/dashboard" />
-
-			<p className="home__register">
-				New here? <Link to="/register">Create a user</Link>.
-			</p>
+				{status === "loading" ? null : authed ? (
+					<Link to="/dashboard" className="home__cta">
+						Go to dashboard
+					</Link>
+				) : (
+					<Link to="/login" className="home__cta">
+						Log in to get started
+					</Link>
+				)}
+			</div>
 		</section>
 	);
 }

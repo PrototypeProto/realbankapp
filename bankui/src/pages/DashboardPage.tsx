@@ -1,33 +1,31 @@
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { LogoutButton } from "../components/LogoutButton";
 import { AccountList } from "../components/AccountList";
 
 /**
- * The signed-in user's workspace: view their accounts and (via the inline
- * AccountList) deposit, withdraw, transfer, and see history.
+ * The signed-in user's workspace.
  *
- * Users can NOT open their own accounts — that's admin-only, so there's no
- * OpenAccountForm here. Admins get a link to the admin area.
+ * Regular users see their own accounts (and can deposit/withdraw/transfer via
+ * the inline AccountList).
  */
 export function DashboardPage() {
 	const { user, isAdmin } = useAuth();
-	if (!user) return null; // guard handles the real redirect
+	if (!user) return null; // guard handles the redirect
 
 	return (
 		<section className="page page--dashboard">
-			<header className="dashboard__header">
-				<span>
-					Signed in as <strong>{user.name}</strong>
-					{isAdmin && <span className="badge">admin</span>}
-				</span>
-				<div className="dashboard__header-actions">
-					{isAdmin && <Link to="/admin">Admin</Link>}
-					<LogoutButton />
-				</div>
-			</header>
+			<h1>Welcome, {user.name}</h1>
 
-			<AccountList />
+			{isAdmin ? (
+				<div className="notice">
+					<p>
+						You're an admin. Head to the <Link to="/admin">admin area</Link> to
+						manage users and open accounts.
+					</p>
+				</div>
+			) : (
+				<AccountList />
+			)}
 		</section>
 	);
 }

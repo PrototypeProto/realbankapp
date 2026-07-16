@@ -182,10 +182,10 @@ class AccountService:
             raise InvalidOperation("you can only close your own account")
 
         balance = source.balance
+        transfer_id = PydanticObjectId()
 
         async def _do(session):
             if balance > 0:
-                # Non-empty: a destination is required, and it must be yours.
                 if destination_id is None:
                     raise InvalidOperation(
                         "this account has a balance; choose an account to move it to"
@@ -202,7 +202,7 @@ class AccountService:
                     -balance,
                     TxnType.TRANSFER_OUT,
                     session=session,
-                    transfer_id=...,
+                    transfer_id=transfer_id,
                     counterparty_account_id=destination_id,
                 )
                 await self._apply(
@@ -210,10 +210,9 @@ class AccountService:
                     balance,
                     TxnType.TRANSFER_IN,
                     session=session,
-                    transfer_id=...,
+                    transfer_id=transfer_id,
                     counterparty_account_id=account_id,
                 )
-            # balance == 0: no sweep, no destination needed — just delete.
             await self.transactions.delete_for_account(account_id, session=session)
             await self.accounts.delete(account_id, session=session)
 

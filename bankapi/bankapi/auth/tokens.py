@@ -21,9 +21,12 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def create_access_token(user_id: str, role: str) -> str:
+def create_access_token(user_id: str, name: str, email: str, role: str) -> str:
+    """Stateless access token: carries everything a request needs to build a"""
     payload = {
         "sub": user_id,
+        "name": name,
+        "email": email,
         "role": role,
         "type": "access",
         "iat": _now(),

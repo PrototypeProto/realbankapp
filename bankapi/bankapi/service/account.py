@@ -114,9 +114,10 @@ class AccountService:
         from_account_id: PydanticObjectId,
         to_account_id: PydanticObjectId,
         amount: Decimal,
+        owner_id: PydanticObjectId,
     ) -> tuple[PydanticObjectId, Transaction, Transaction]:
         """Four writes — two balances, two ledger rows — all or nothing.
-        Both accounts must exist and belong to the same user."""
+        Both accounts must exist and belong to `owner_id`"""
         if from_account_id == to_account_id:
             raise InvalidOperation("cannot transfer to the same account")
 
@@ -128,8 +129,8 @@ class AccountService:
         if dest is None:
             raise NotFound(f"account {to_account_id} not found")
 
-        if source.user_id != dest.user_id:
-            raise InvalidOperation("both accounts must belong to the same user")
+        if source.user_id != owner_id or dest.user_id != owner_id:
+            raise InvalidOperation("both accounts must belong to you")
 
         amount = to_money(amount)
         transfer_id = PydanticObjectId()

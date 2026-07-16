@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     mongo_db: str = Field(default="", alias="MONGODB")
     app_name: str = Field(default="", alias="MONGOAPPNAME")
 
+    # --- auth / JWT ---
+    jwt_secret: str = Field(default="MISSING_SECRET", alias="JWT_SECRET")
+    jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
+    access_token_ttl_minutes: int = Field(default=15, alias="ACCESS_TOKEN_TTL_MINUTES")
+    refresh_token_ttl_days: int = Field(default=7, alias="REFRESH_TOKEN_TTL_DAYS")
+    cookie_secure: bool = Field(default=False, alias="COOKIE_SECURE")
+    cookie_samesite: str = Field(default="lax", alias="COOKIE_SAMESITE")
+
     # Multi-document transactions need a replica set. Atlas is one.
     use_transactions: bool = Field(default=True, alias="USE_TRANSACTIONS")
 

@@ -7,7 +7,12 @@ from fastapi import APIRouter, Depends, Query, status
 from bankapi.auth.dependencies import CurrentUser, get_current_user, require_admin
 from bankapi.errors import Forbidden
 from bankapi.models.account import Account
-from bankapi.schemas.account import AccountCreate, AccountOut, AmountIn
+from bankapi.schemas.account import (
+    AccountCreate,
+    AccountOut,
+    AmountIn,
+    CloseAccountIn,
+)
 from bankapi.schemas.transaction import TransactionOut
 from bankapi.service.account import account_service
 from bankapi.service.user import user_service
@@ -96,9 +101,23 @@ async def withdraw(
 async def get_transactions(
     account_id: PydanticObjectId,
     current: CurrentUser = Depends(get_current_user),
-    limit: int = Query(15, ge=1, le=25),
+    limit: int = Query(50, ge=1, le=100),
     skip: int = Query(0, ge=0),
 ):
     await _load_owned(account_id, current)  # owner or admin may view
     txns = await account_service.get_transactions(account_id, limit=limit, skip=skip)
     return [TransactionOut.from_model(t) for t in txns]
+
+
+@router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def close_account(
+    account_id: PydanticObjectId,
+    payload: CloseAccountIn,
+    current: CurrentUser = Depends(get_current_user),
+):
+    """Close one of YOUR accounts, sweeping its balance into another of your
+    accounts if bal > 0.00"""
+    await _require_own(account_id, current)  # owner only
+    await account_service.close_account(
+        account_id, owner_id=current.id, destination_id=payload.destination_account_id
+    )

@@ -1,4 +1,5 @@
 from beanie import PydanticObjectId
+from pymongo.asynchronous.client_session import AsyncClientSession
 from pymongo.errors import DuplicateKeyError
 
 from bankapi.errors import Conflict
@@ -28,6 +29,16 @@ class UserRepository:
 
     async def exists(self, user_id: PydanticObjectId) -> bool:
         return await User.find_one(User.id == user_id).exists()
+
+    async def delete(
+        self,
+        user_id: PydanticObjectId,
+        *,
+        session: AsyncClientSession | None = None,
+    ) -> None:
+        user = await User.get(user_id)
+        if user is not None:
+            await user.delete(session=session)
 
     async def count(self) -> int:
         """Used to make the very first registered user an admin."""

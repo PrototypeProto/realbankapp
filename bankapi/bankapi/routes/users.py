@@ -1,9 +1,8 @@
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, Query
 
-from bankapi.auth.dependencies import get_current_user, require_admin
+from bankapi.auth.dependencies import CurrentUser, get_current_user, require_admin
 from bankapi.errors import Forbidden
-from bankapi.models.user import Role, User
 from bankapi.schemas.account import AccountOut
 from bankapi.schemas.user import RoleUpdate, UserOut
 from bankapi.service.account import account_service
@@ -12,13 +11,9 @@ from bankapi.service.user import user_service
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-def _is_admin(user: User) -> bool:
-    return user.role == Role.ADMIN
-
-
 @router.get("", response_model=list[UserOut])
 async def list_users(
-    _admin: User = Depends(require_admin),  # admin only
+    _admin: CurrentUser = Depends(require_admin),  # admin only
     limit: int = Query(50, ge=1, le=100),
     skip: int = Query(0, ge=0),
 ):
@@ -29,9 +24,10 @@ async def list_users(
 @router.get("/{user_id}", response_model=UserOut)
 async def get_user(
     user_id: PydanticObjectId,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
 ):
-    if not _is_admin(current) and current.id != user_id:
+    # Admin can view anyone; a user can view only themselves.
+    if not current.is_admin and current.id != user_id:
         raise Forbidden("you may only view your own profile")
     return UserOut.from_model(await user_service.get_user(user_id))
 
@@ -40,7 +36,7 @@ async def get_user(
 async def set_role(
     user_id: PydanticObjectId,
     payload: RoleUpdate,
-    _admin: User = Depends(require_admin),  # admin only
+    _admin: CurrentUser = Depends(require_admin),  # admin only
 ):
     """Promote/demote a user. Admin only."""
     return UserOut.from_model(await user_service.set_role(user_id, payload.role))
@@ -49,9 +45,10 @@ async def set_role(
 @router.get("/{user_id}/accounts", response_model=list[AccountOut])
 async def list_user_accounts(
     user_id: PydanticObjectId,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
 ):
-    if not _is_admin(current) and current.id != user_id:
+    # Admin can view any user's accounts; a user only their own.
+    if not current.is_admin and current.id != user_id:
         raise Forbidden("you may only view your own accounts")
     user = await user_service.get_user(user_id)
     accounts = await account_service.list_for_user(user_id)

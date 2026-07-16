@@ -1,12 +1,12 @@
-"""Controller layer. Thin: parse, delegate, serialise. Auth guards."""
+"""Controller layer. Thin: parse, delegate, serialise. Auth guards live here
+because ownership compares the authenticated user against a path param."""
 
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, Query, status
 
-from bankapi.auth.dependencies import get_current_user, require_admin
+from bankapi.auth.dependencies import CurrentUser, get_current_user, require_admin
 from bankapi.errors import Forbidden
 from bankapi.models.account import Account
-from bankapi.models.user import Role, User
 from bankapi.schemas.account import AccountCreate, AccountOut, AmountIn
 from bankapi.schemas.transaction import TransactionOut
 from bankapi.service.account import account_service
@@ -15,20 +15,16 @@ from bankapi.service.user import user_service
 router = APIRouter(prefix="/api/accounts", tags=["accounts"])
 
 
-def _is_admin(user: User) -> bool:
-    return user.role == Role.ADMIN
-
-
-async def _load_owned(account_id: PydanticObjectId, current: User) -> Account:
+async def _load_owned(account_id: PydanticObjectId, current: CurrentUser) -> Account:
     """Fetch an account and enforce that `current` may READ it (owner or admin).
     Raises 404 if missing, 403 if not permitted."""
     account = await account_service.get_account(account_id)  # 404 if missing
-    if not _is_admin(current) and account.user_id != current.id:
+    if not current.is_admin and account.user_id != current.id:
         raise Forbidden("you do not own this account")
     return account
 
 
-async def _require_own(account_id: PydanticObjectId, current: User) -> Account:
+async def _require_own(account_id: PydanticObjectId, current: CurrentUser) -> Account:
     """Like _load_owned but for WRITES (deposit/withdraw): owner ONLY — admins
     may view but not move other people's money."""
     account = await account_service.get_account(account_id)
@@ -45,7 +41,7 @@ async def _to_out(account: Account) -> AccountOut:
 @router.post("", response_model=AccountOut, status_code=status.HTTP_201_CREATED)
 async def create_account(
     payload: AccountCreate,
-    _admin: User = Depends(require_admin),
+    _admin: CurrentUser = Depends(require_admin),
 ):
     """POST /api/accounts  {"userId": "...", "accountType": "SAVINGS"}
     Admin only — users cannot open their own accounts."""
@@ -59,7 +55,7 @@ async def create_account(
 @router.get("/{account_id}", response_model=AccountOut)
 async def get_account(
     account_id: PydanticObjectId,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
 ):
     return await _to_out(await _load_owned(account_id, current))
 
@@ -72,7 +68,7 @@ async def get_account(
 async def deposit(
     account_id: PydanticObjectId,
     payload: AmountIn,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
 ):
     await _require_own(account_id, current)  # owner only
     return TransactionOut.from_model(
@@ -88,7 +84,7 @@ async def deposit(
 async def withdraw(
     account_id: PydanticObjectId,
     payload: AmountIn,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
 ):
     await _require_own(account_id, current)  # owner only
     return TransactionOut.from_model(
@@ -99,7 +95,7 @@ async def withdraw(
 @router.get("/{account_id}/transactions", response_model=list[TransactionOut])
 async def get_transactions(
     account_id: PydanticObjectId,
-    current: User = Depends(get_current_user),
+    current: CurrentUser = Depends(get_current_user),
     limit: int = Query(15, ge=1, le=25),
     skip: int = Query(0, ge=0),
 ):

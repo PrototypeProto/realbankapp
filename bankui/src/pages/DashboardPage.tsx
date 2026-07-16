@@ -1,31 +1,33 @@
-import { useState } from "react";
-import { useCurrentUser } from "../context/CurrentUserContext";
-import { UserSwitcher } from "../components/UserSwitcher";
+import { Link } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { LogoutButton } from "../components/LogoutButton";
 import { AccountList } from "../components/AccountList";
-import { OpenAccountForm } from "../components/OpenAccountForm";
 
 /**
- * The signed-in user's workspace: switch user, open accounts, and (via the
- * inline-expanding AccountList) view details, deposit, withdraw, transfer, and
- * see history. All the former "pages" live here as components.
+ * The signed-in user's workspace: view their accounts and (via the inline
+ * AccountList) deposit, withdraw, transfer, and see history.
  *
- * `refresh` is a counter bumped when an account is opened, to re-fetch the list.
+ * Users can NOT open their own accounts — that's admin-only, so there's no
+ * OpenAccountForm here. Admins get a link to the admin area.
  */
 export function DashboardPage() {
-	const { user } = useCurrentUser();
-	const [refresh, setRefresh] = useState(0);
-
-	// Route guard should prevent this, but keep a friendly fallback.
-	if (!user) return <p className="status">No user selected.</p>;
+	const { user, isAdmin } = useAuth();
+	if (!user) return null; // guard handles the real redirect
 
 	return (
 		<section className="page page--dashboard">
-			<UserSwitcher />
+			<header className="dashboard__header">
+				<span>
+					Signed in as <strong>{user.name}</strong>
+					{isAdmin && <span className="badge">admin</span>}
+				</span>
+				<div className="dashboard__header-actions">
+					{isAdmin && <Link to="/admin">Admin</Link>}
+					<LogoutButton />
+				</div>
+			</header>
 
-			<div className="dashboard__grid">
-				<AccountList refreshSignal={refresh} />
-				<OpenAccountForm onCreated={() => setRefresh((n) => n + 1)} />
-			</div>
+			<AccountList />
 		</section>
 	);
 }

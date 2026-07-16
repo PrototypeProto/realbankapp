@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usersApi } from "../api";
 import type { AccountOut } from "../api";
 import { useAsync } from "../hooks/useAsync";
-import { useCurrentUser } from "../context/CurrentUserContext";
+import { useAuth } from "../context/AuthContext";
 import { Money } from "./Money";
 import { StatusMessage } from "./StatusMessage";
 import { AccountPanel } from "./AccountPanel";
@@ -18,7 +18,7 @@ interface AccountListProps {
 }
 
 export function AccountList({ refreshSignal = 0 }: AccountListProps) {
-	const { user } = useCurrentUser();
+	const { user } = useAuth();
 	const [expandedId, setExpandedId] = useState<string | null>(null);
 
 	const {

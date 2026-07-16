@@ -6,35 +6,26 @@ import { useAsyncFn } from "../hooks/useAsync";
 import { Field } from "../components/Field";
 
 /**
- * Register with name + email + password . The FIRST
- * user to register becomes admin
+ * Email + password login. On success the AuthContext holds the user and we go
+ * to the dashboard.
  */
-export function RegisterPage() {
+export function LoginPage() {
 	const navigate = useNavigate();
-	const { register } = useAuth();
-	const { run, loading, error } = useAsyncFn(register);
-	const [name, setName] = useState("");
+	const { login } = useAuth();
+	const { run, loading, error } = useAsyncFn(login);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
 	const display = error ? toDisplayError(error) : null;
 
 	async function handleSubmit() {
-		const user = await run({ name, email, password });
+		const user = await run({ email, password });
 		if (user) navigate("/dashboard");
 	}
 
 	return (
-		<section className="page page--register">
-			<h1>Create an account</h1>
-
-			<Field label="Name" htmlFor="name" error={display?.fields?.name}>
-				<input
-					id="name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-				/>
-			</Field>
+		<section className="page page--login">
+			<h1>Sign in</h1>
 
 			<Field label="Email" htmlFor="email" error={display?.fields?.email}>
 				<input
@@ -42,6 +33,7 @@ export function RegisterPage() {
 					type="text"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
+					onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
 				/>
 			</Field>
 
@@ -60,7 +52,7 @@ export function RegisterPage() {
 			</Field>
 
 			<button type="button" onClick={handleSubmit} disabled={loading}>
-				{loading ? "Creating…" : "Create account"}
+				{loading ? "Signing in…" : "Sign in"}
 			</button>
 
 			{display && display.kind !== "validation" && (
@@ -70,7 +62,7 @@ export function RegisterPage() {
 			)}
 
 			<p className="muted">
-				Already have an account? <Link to="/login">Sign in</Link>.
+				No account? <Link to="/register">Register</Link>.
 			</p>
 		</section>
 	);

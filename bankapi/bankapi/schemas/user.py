@@ -4,7 +4,7 @@ from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from pydantic.alias_generators import to_camel
 
-from bankapi.models.user import User
+from bankapi.models.user import Role, User
 
 
 class CamelModel(BaseModel):
@@ -17,15 +17,13 @@ class CamelModel(BaseModel):
     )
 
 
-class UserCreate(CamelModel):
-    name: str = Field(min_length=1, max_length=100)
-    email: EmailStr
-
-
 class UserOut(CamelModel):
+    """Public shape of a user. Exclude pwd hash"""
+
     user_id: PydanticObjectId
     name: str
     email: EmailStr
+    role: Role
     created_at: datetime
 
     @classmethod
@@ -34,5 +32,24 @@ class UserOut(CamelModel):
             user_id=user.id,
             name=user.name,
             email=user.email,
+            role=user.role,
             created_at=user.created_at,
         )
+
+
+# --- auth request bodies ----------------------------------------------------
+
+
+class RegisterIn(CamelModel):
+    name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=200)
+
+
+class LoginIn(CamelModel):
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=200)
+
+
+class RoleUpdate(CamelModel):
+    role: Role

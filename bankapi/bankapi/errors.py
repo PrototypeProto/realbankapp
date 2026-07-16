@@ -33,3 +33,18 @@ class InsufficientFunds(DomainError):
 class InvalidOperation(DomainError):
     status = HTTPStatus.UNPROCESSABLE_ENTITY
     code = "invalid_operation"
+
+
+class Unauthorized(DomainError):
+    """Not authenticated — missing or invalid credentials."""
+
+    status = HTTPStatus.UNAUTHORIZED
+    code = "unauthorized"
+
+
+class Forbidden(DomainError):
+    """Authenticated but not allowed — e.g. non-admin hitting an admin route,
+    or a user acting on someone else's resource."""
+
+    status = HTTPStatus.FORBIDDEN
+    code = "forbidden"

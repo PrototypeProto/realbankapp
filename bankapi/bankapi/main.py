@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from bankapi.db import close_db, init_db, ping
 from bankapi.errors import DomainError
-from bankapi.routes import accounts, transfers, users
+from bankapi.routes import accounts, auth, transfers, users
 
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -28,7 +28,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "*"],  # vite, remove * later
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -102,6 +102,7 @@ async def health():
     return {"status": "BAD"}
 
 
+app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(accounts.router)
 app.include_router(transfers.router)

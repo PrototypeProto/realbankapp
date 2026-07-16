@@ -2,12 +2,19 @@ from beanie import PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 
 from bankapi.errors import Conflict
-from bankapi.models.user import User
+from bankapi.models.user import Role, User
 
 
 class UserRepository:
-    async def create(self, name: str, email: str) -> User:
-        user = User(name=name, email=email.lower())
+    async def create(
+        self, name: str, email: str, password_hash: str, role: Role
+    ) -> User:
+        user = User(
+            name=name,
+            email=email.lower(),
+            password_hash=password_hash,
+            role=role,
+        )
         try:
             return await user.insert()
         except DuplicateKeyError as exc:
@@ -21,6 +28,15 @@ class UserRepository:
 
     async def exists(self, user_id: PydanticObjectId) -> bool:
         return await User.find_one(User.id == user_id).exists()
+
+    async def count(self) -> int:
+        """Used to make the very first registered user an admin."""
+        return await User.find_all().count()
+
+    async def set_role(self, user: User, role: Role) -> User:
+        user.role = role
+        await user.save()
+        return user
 
     async def get_all(self, limit: int = 50, skip: int = 0) -> list[User]:
         return (

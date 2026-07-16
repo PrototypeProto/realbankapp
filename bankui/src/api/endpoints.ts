@@ -12,6 +12,7 @@ import type {
 	AccountOut,
 	AmountIn,
 	LoginIn,
+	MeOut,
 	ObjectId,
 	RegisterIn,
 	RoleUpdate,
@@ -34,7 +35,7 @@ export const authApi = {
 	logout: () => request<void>("/api/auth/logout", { method: "POST" }),
 
 	// GET  /api/auth/me         current user (rehydrates session from cookie)
-	me: (signal?: AbortSignal) => request<UserOut>("/api/auth/me", { signal }),
+	me: (signal?: AbortSignal) => request<MeOut>("/api/auth/me", { signal }),
 };
 
 export const usersApi = {

@@ -23,6 +23,13 @@ export interface UserOut {
 	createdAt: string;
 }
 
+export interface MeOut {
+	userId: ObjectId;
+	name: string;
+	email: string;
+	role: Role;
+}
+
 export interface AccountOut {
 	accountId: ObjectId;
 	userId: ObjectId;

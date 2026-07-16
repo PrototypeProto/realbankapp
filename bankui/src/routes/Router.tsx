@@ -6,6 +6,9 @@ import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { AdminPage } from "../pages/AdminPage";
+import { AboutPage } from "../pages/AboutPage";
+import { ContactPage } from "../pages/ContactPage";
+import { FaqPage } from "../pages/FaqPage";
 
 /**
  * Routes:
@@ -21,6 +24,9 @@ export const router = createBrowserRouter([
 		Component: RootLayout,
 		children: [
 			{ index: true, Component: HomePage },
+			{ path: "about", Component: AboutPage },
+			{ path: "contact", Component: ContactPage },
+			{ path: "faq", Component: FaqPage },
 			{ path: "login", Component: LoginPage },
 			{ path: "register", Component: RegisterPage },
 			{

@@ -14,10 +14,13 @@ export function RootLayout() {
 		<div className="app">
 			<header className="navbar">
 				<Link to="/" className="navbar__brand">
-					🏦 BankApp
+					銀行 Bank
 				</Link>
 
 				<nav className="navbar__links">
+					<NavLink to="/about">About</NavLink>
+					<NavLink to="/contact">Contact</NavLink>
+					<NavLink to="/faq">FAQ</NavLink>
 					{status === "loading" ? null : authed ? (
 						<>
 							<NavLink to="/dashboard">Dashboard</NavLink>

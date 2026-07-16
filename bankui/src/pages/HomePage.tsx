@@ -11,8 +11,8 @@ export function HomePage() {
 	return (
 		<section className="page page--home">
 			<div className="home__hero">
-				<h1>🏦 BankApp</h1>
-				<p className="muted">Simple banking for a simple project.</p>
+				<h1>GINKOU BANK</h1>
+				<p className="muted">Bank for all. Save, transfer, and withdraw.</p>
 
 				{status === "loading" ? null : authed ? (
 					<Link to="/dashboard" className="home__cta">

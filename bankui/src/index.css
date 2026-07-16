@@ -76,6 +76,35 @@ body {
 	color: var(--muted);
 }
 
+.page--static {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 0.75rem 0;
+}
+
+.page--static h1 {
+	margin: 0 0 0.75rem;
+}
+
+.page--static h2 {
+	margin: 1.25rem 0 0.4rem;
+	font-size: 1.05rem;
+}
+
+.page--static p {
+	margin: 0;
+	color: var(--text);
+}
+
+.page--static ul {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.page--static li {
+	margin: 0.25rem 0;
+}
+
 .dashboard__grid {
 	display: grid;
 	grid-template-columns: 1fr;

@@ -25,45 +25,47 @@ export function LoginPage() {
 
 	return (
 		<section className="page page--login">
-			<h1>Sign in</h1>
+			<div className="capsule capsule--form">
+				<h1>Sign in</h1>
 
-			<Field label="Email" htmlFor="email" error={display?.fields?.email}>
-				<input
-					id="email"
-					type="text"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
-				/>
-			</Field>
+				<Field label="Email" htmlFor="email" error={display?.fields?.email}>
+					<input
+						id="email"
+						type="text"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+					/>
+				</Field>
 
-			<Field
-				label="Password"
-				htmlFor="password"
-				error={display?.fields?.password}
-			>
-				<input
-					id="password"
-					type="password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
-				/>
-			</Field>
+				<Field
+					label="Password"
+					htmlFor="password"
+					error={display?.fields?.password}
+				>
+					<input
+						id="password"
+						type="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+					/>
+				</Field>
 
-			<button type="button" onClick={handleSubmit} disabled={loading}>
-				{loading ? "Signing in…" : "Sign in"}
-			</button>
+				<button type="button" onClick={handleSubmit} disabled={loading}>
+					{loading ? "Signing in…" : "Sign in"}
+				</button>
 
-			{display && display.kind !== "validation" && (
-				<p className="status status--error" role="alert">
-					{display.message}
+				{display && display.kind !== "validation" && (
+					<p className="status status--error" role="alert">
+						{display.message}
+					</p>
+				)}
+
+				<p className="muted">
+					No account? <Link to="/register">Register</Link>.
 				</p>
-			)}
-
-			<p className="muted">
-				No account? <Link to="/register">Register</Link>.
-			</p>
+			</div>
 		</section>
 	);
 }

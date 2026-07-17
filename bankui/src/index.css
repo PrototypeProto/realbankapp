@@ -3,6 +3,11 @@
 
 :root {
 	--bg: #f4f5f7;
+	--site-bg-image: url("/bg.webp");
+	--site-bg-size: 100%;
+	--site-bg-repeat: repeat;
+	--site-bg-position: center;
+	--site-bg-alpha: 0.1;
 	--surface: #ffffff;
 	--border: #e2e5ea;
 	--text: #1c1f23;
@@ -21,8 +26,22 @@
 
 body {
 	margin: 0;
-	background: var(--bg);
+	position: relative;
+	background-color: var(--bg);
 	color: var(--text);
+}
+
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	background-image: var(--site-bg-image);
+	background-repeat: var(--site-bg-repeat);
+	background-position: var(--site-bg-position);
+	background-size: var(--site-bg-size);
+	opacity: var(--site-bg-alpha);
+	pointer-events: none;
+	z-index: -1;
 }
 
 /* --- app shell ----------------------------------------------------------- */
@@ -43,7 +62,7 @@ body {
 }
 
 .app__main {
-	max-width: 880px;
+	max-width: 1040px;
 	margin: 0 auto;
 	padding: 1.5rem;
 }
@@ -54,6 +73,9 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: var(--gap);
+	/* constrain children (grids, tables) to the backdrop width so they shrink
+	   inside it rather than overflowing past the padded edge. */
+	min-width: 0;
 }
 
 .home__hero {
@@ -417,8 +439,12 @@ button:disabled {
 
 .admin__grid {
 	display: grid;
+	/* One column by default; two only past the breakpoint below, where there's
+	   real room. minmax(0, …) on those columns lets them shrink inside the
+	   backdrop instead of being forced to the content's intrinsic width. */
 	grid-template-columns: 1fr;
 	gap: 1.5rem;
+	align-items: start;
 }
 
 .admin__open-account,
@@ -427,12 +453,30 @@ button:disabled {
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	padding: 1.25rem;
+	/* allow the panel to shrink below its content's intrinsic width (the wide
+	   table) so it never overflows the grid column / backdrop. */
+	min-width: 0;
 }
 
-@media (min-width: 800px) {
+/* the user table can be wider than its panel on narrow screens — let it scroll
+   INSIDE the panel instead of stretching the panel out. */
+.admin__users {
+	overflow-x: auto;
+}
+
+/* admin users table: keep the action column ("Make admin"/Delete) off the right
+   wall and right-aligned, so it isn't flush to the panel edge. Scoped here so
+   the transaction history table (same .txn-table class) is unaffected. */
+.admin__users .txn-table td:last-child,
+.admin__users .txn-table th:last-child {
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* two columns only once there's genuinely room for both */
+@media (min-width: 900px) {
 	.admin__grid {
-		grid-template-columns: 2fr 1fr;
-		align-items: start;
+		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 	}
 }
 
@@ -491,6 +535,7 @@ button:disabled {
 	display: flex;
 	gap: 0.5rem;
 	align-items: center;
+	justify-content: flex-end;
 }
 
 /* inline confirm prompt (two-click promote / delete) */
@@ -498,8 +543,149 @@ button:disabled {
 	display: flex;
 	gap: 0.5rem;
 	align-items: center;
+	justify-content: flex-end;
 }
 .confirm__text {
 	font-size: 0.85rem;
 	color: var(--muted);
+}
+
+/* ========================================================================== */
+/* Layered capsules: outer decorative backdrop + inner content capsule        */
+/* ========================================================================== */
+
+/* Outer backdrop — soft, transparent tint sitting behind page content. Wraps
+   everything inside <main> (the navbar is outside it). */
+.page-backdrop {
+	background: linear-gradient(
+		160deg,
+		color-mix(in srgb, var(--accent) 14%, transparent),
+		color-mix(in srgb, var(--accent) 6%, transparent)
+	);
+	border: 2px solid color-mix(in srgb, var(--accent) 22%, transparent);
+	border-radius: calc(var(--radius) + 12px);
+	padding: 2.75rem;
+	box-sizing: border-box;
+}
+
+/* Inner content capsule — the solid surface the actual text/content sits on,
+   mirroring how .account-list / .notice look on the dashboard. */
+.capsule {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 1.5rem 1.75rem;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* static pages already center themselves; let the capsule fill that width */
+.page--static .capsule {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+/* auth form capsule: narrower, centered */
+.capsule--form {
+	max-width: 360px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+/* home capsule holds hero + carousel + cta */
+.capsule--home {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	align-items: stretch;
+	min-width: 0; /* allow the carousel viewport inside to shrink + clip */
+}
+
+/* --- home hero image ----------------------------------------------------- */
+
+.home__hero-image {
+	display: block;
+	width: 160px;
+	height: 160px;
+	object-fit: cover;
+	margin: 0 auto 0.75rem;
+	border-radius: 16px;
+}
+
+.home__cta-row {
+	text-align: center;
+}
+
+/* --- carousel ------------------------------------------------------------ */
+
+.carousel {
+	/* fixed-width viewport that clips the moving track. min-width:0 stops this
+	   flex child from widening its parent to fit the (very wide) track. */
+	overflow: hidden;
+	min-width: 0;
+	width: 100%;
+	/* cap the window so a couple of tiles are always clipped off-screen —
+	   otherwise with few tiles you'd see them all and there'd be no visible
+	   travel. ~2 tiles wide (160px each + 16px gap). Adjust to taste. */
+	max-width: 520px;
+	margin: 0 auto;
+	padding: 0.5rem 0;
+	cursor: grab;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: pan-y; /* let vertical page scroll through; we handle horizontal */
+}
+
+.carousel:active {
+	cursor: grabbing;
+}
+
+/* the moving track: holds both duplicated sets, shifted via translateX */
+.carousel__track {
+	display: flex;
+	width: max-content; /* size to content so both copies lay out in a row */
+	will-change: transform;
+}
+
+/* each duplicated copy of the tiles is a flex row */
+.carousel__set {
+	display: flex;
+	gap: 1rem;
+	padding-right: 1rem; /* keeps spacing consistent across the seam */
+	flex: 0 0 auto;
+}
+
+.carousel__tile {
+	flex: 0 0 auto;
+	width: 160px;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.carousel__thumb {
+	width: 160px;
+	height: 160px;
+	border-radius: 12px;
+	overflow: hidden;
+	background: var(--accent-weak);
+	border: 1px solid var(--border);
+}
+
+.carousel__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	user-select: none;
+}
+
+.carousel__caption {
+	font-size: 0.85rem;
+	color: var(--text);
+	text-align: center;
+	line-height: 1.3;
 }

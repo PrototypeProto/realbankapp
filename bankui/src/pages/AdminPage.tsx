@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import { usersApi } from "../api";
 import type { UserOut } from "../api";
 import { useAsync } from "../hooks/useAsync";
-import { LogoutButton } from "../components/LogoutButton";
 import { StatusMessage } from "../components/StatusMessage";
 import { AdminOpenAccountForm } from "../components/AdminOpenAccountForm";
 import { useAuth } from "../context/AuthContext";
@@ -32,10 +30,6 @@ export function AdminPage() {
 		<section className="page page--admin">
 			<header className="dashboard__header">
 				<h1>Admin</h1>
-				<div className="dashboard__header-actions">
-					<Link to="/dashboard">My dashboard</Link>
-					<LogoutButton />
-				</div>
 			</header>
 
 			<div className="admin__grid">

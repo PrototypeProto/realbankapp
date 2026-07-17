@@ -26,52 +26,54 @@ export function RegisterPage() {
 
 	return (
 		<section className="page page--register">
-			<h1>Create an account</h1>
+			<div className="capsule capsule--form">
+				<h1>Create an account</h1>
 
-			<Field label="Name" htmlFor="name" error={display?.fields?.name}>
-				<input
-					id="name"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-				/>
-			</Field>
+				<Field label="Name" htmlFor="name" error={display?.fields?.name}>
+					<input
+						id="name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+					/>
+				</Field>
 
-			<Field label="Email" htmlFor="email" error={display?.fields?.email}>
-				<input
-					id="email"
-					type="text"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
-				/>
-			</Field>
+				<Field label="Email" htmlFor="email" error={display?.fields?.email}>
+					<input
+						id="email"
+						type="text"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+					/>
+				</Field>
 
-			<Field
-				label="Password"
-				htmlFor="password"
-				error={display?.fields?.password}
-			>
-				<input
-					id="password"
-					type="password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
-				/>
-			</Field>
+				<Field
+					label="Password"
+					htmlFor="password"
+					error={display?.fields?.password}
+				>
+					<input
+						id="password"
+						type="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+					/>
+				</Field>
 
-			<button type="button" onClick={handleSubmit} disabled={loading}>
-				{loading ? "Creating…" : "Create account"}
-			</button>
+				<button type="button" onClick={handleSubmit} disabled={loading}>
+					{loading ? "Creating…" : "Create account"}
+				</button>
 
-			{display && display.kind !== "validation" && (
-				<p className="status status--error" role="alert">
-					{display.message}
+				{display && display.kind !== "validation" && (
+					<p className="status status--error" role="alert">
+						{display.message}
+					</p>
+				)}
+
+				<p className="muted">
+					Already have an account? <Link to="/login">Sign in</Link>.
 				</p>
-			)}
-
-			<p className="muted">
-				Already have an account? <Link to="/login">Sign in</Link>.
-			</p>
+			</div>
 		</section>
 	);
 }

@@ -23,8 +23,13 @@ export function RootLayout() {
 					<NavLink to="/faq">FAQ</NavLink>
 					{status === "loading" ? null : authed ? (
 						<>
-							<NavLink to="/dashboard">Dashboard</NavLink>
-							{isAdmin && <NavLink to="/admin">Admin</NavLink>}
+							{/* admins have no personal dashboard, so show it only to
+							    regular users; admins get the Admin link instead. */}
+							{isAdmin ? (
+								<NavLink to="/admin">Admin</NavLink>
+							) : (
+								<NavLink to="/dashboard">Dashboard</NavLink>
+							)}
 							<LogoutButton />
 						</>
 					) : (
@@ -39,7 +44,11 @@ export function RootLayout() {
 			</header>
 
 			<main className="app__main">
-				<Outlet />
+				{/* Outer decorative backdrop: a soft, transparent tinted panel that
+				    sits behind every page's content capsule. */}
+				<div className="page-backdrop">
+					<Outlet />
+				</div>
 			</main>
 		</div>
 	);
